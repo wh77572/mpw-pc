@@ -23,12 +23,14 @@ vi.mock('@/services/ant-design-pro/api', () => ({
 }));
 
 vi.mock('@/components', () => ({
+  AppWatermark: ({ children }: any) => children,
   AvatarDropdown: () => null,
   DocLink: () => null,
   ErrorBoundary: ({ children }: any) => children,
   Footer: () => null,
   LangDropdown: () => null,
   OfflineBanner: () => null,
+  PageTabs: ({ children }: any) => children,
   VersionDropdown: () => null,
 }));
 

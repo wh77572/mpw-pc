@@ -51,7 +51,7 @@ export default [
   },
   {
     path: '/admin',
-    name: 'admin',
+    name: '营销管理',
     icon: 'crown',
     access: 'canAdmin',
     routes: [
@@ -61,7 +61,7 @@ export default [
       },
       {
         path: '/admin/sub-page',
-        name: 'sub-page',
+        name: '公海',
         component: './Admin',
       },
     ],

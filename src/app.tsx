@@ -1,8 +1,7 @@
-import {LinkOutlined} from '@ant-design/icons';
 import type {Settings as LayoutSettings} from '@ant-design/pro-components';
-import {SettingDrawer, WaterMark} from '@ant-design/pro-components';
+import {SettingDrawer} from '@ant-design/pro-components';
 import type {RequestConfig, RunTimeLayoutConfig} from '@umijs/max';
-import {history, Link, useModel} from '@umijs/max';
+import {history, Link} from '@umijs/max';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import React from 'react';
@@ -10,13 +9,13 @@ import React from 'react';
 // Initialize dayjs plugins globally
 dayjs.extend(relativeTime);
 import {
+  AppWatermark,
+  PageTabs,
   AvatarDropdown,
-  DocLink,
   ErrorBoundary,
   Footer,
   LangDropdown,
   OfflineBanner,
-  VersionDropdown,
 } from '@/components';
 import {currentUser as queryCurrentUser} from '@/services/ant-design-pro/api';
 import defaultSettings from '../config/defaultSettings';
@@ -77,6 +76,7 @@ export const layout: RunTimeLayoutConfig = ({
                                               setInitialState,
                                             }) => {
   return {
+    ...initialState?.settings,
     menuItemRender: (item, dom) => {
       if (item.path) {
         return (
@@ -87,6 +87,8 @@ export const layout: RunTimeLayoutConfig = ({
       }
       return dom;
     },
+    breadcrumbRender: false,
+    pageTitleRender: false,
     actionsRender: () => {
       // `locale: false` opts out of the language switcher. ProLayout's own
       // `locale` prop is a locale string, so narrow to the boolean toggle here.
@@ -105,9 +107,6 @@ export const layout: RunTimeLayoutConfig = ({
         <AvatarDropdown>{avatarChildren}</AvatarDropdown>
       ),
     },
-    // waterMarkProps: {
-    //   content: initialState?.currentUser?.name,
-    // },
     footerRender: () => <Footer/>,
     onPageChange: () => {
       const {location} = history;
@@ -150,36 +149,13 @@ export const layout: RunTimeLayoutConfig = ({
     // so chunk load errors show friendly messages instead of "Something went wrong."
     ErrorBoundary,
     menuHeaderRender: undefined,
-    // 自定义 403 页面
-    // unAccessible: <div>unAccessible</div>,
-    // 增加一个 loading 的状态
     childrenRender: (children) => {
-      // if (initialState?.loading) return <PageLoading />;
       return (
-        <>
-          {children}
-          <SettingDrawer
-            disableUrlParams
-            enableDarkTheme
-            collapse={initialState?.settingDrawerOpen}
-            onCollapseChange={(open) => {
-              setInitialState((s) => ({
-                ...s,
-                settingDrawerOpen: open,
-              }));
-            }}
-            settings={initialState?.settings}
-            onSettingChange={(settings) => {
-              setInitialState((s) => ({
-                ...s,
-                settings,
-              }));
-            }}
-          />
-        </>
+        <AppWatermark>
+          <PageTabs>{children}</PageTabs>
+        </AppWatermark>
       );
     },
-    ...initialState?.settings,
   };
 };
 
@@ -193,18 +169,11 @@ export const request: RequestConfig = {
   ...errorConfig,
 };
 
-export async function rootContainer(container: React.ReactNode) {
-  const initState = await getInitialState();
-  console.log(initState)
-
+export function rootContainer(container: React.ReactNode) {
   return (
     <>
-      <OfflineBanner/>
-      <ErrorBoundary>
-        {/*<WaterMark content={initState.currentUser?.name}>*/}
-        {container}
-        {/*</WaterMark>*/}
-      </ErrorBoundary>
+      <OfflineBanner />
+      <ErrorBoundary>{container}</ErrorBoundary>
     </>
   );
 }

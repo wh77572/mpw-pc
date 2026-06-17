@@ -122,9 +122,9 @@ export const LangDropdown: React.FC = () => {
         style: { minWidth: 180 },
       }}
     >
-      <Button type="text" className={styles.action} aria-label="语言切换">
-        <GlobalOutlined />
-      </Button>
+      {/*<Button type="text" className={styles.action} aria-label="语言切换">*/}
+      {/*  <GlobalOutlined />*/}
+      {/*</Button>*/}
     </HeaderDropdown>
   );
 };

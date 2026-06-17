@@ -12,6 +12,8 @@ import { AvatarDropdown } from './RightContent/AvatarDropdown';
 /**
  * 业务组件
  */
+export { default as AppWatermark } from './AppWatermark';
+export { default as PageTabs } from './PageTabs';
 export { default as ArticleListContent } from './ArticleListContent';
 export { default as AvatarList } from './AvatarList';
 export { default as ErrorBoundary } from './ErrorBoundary';
