@@ -1,7 +1,14 @@
-import { CloseOutlined } from '@ant-design/icons';
 import { history, useLocation } from '@umijs/max';
 import { createStyles } from 'antd-style';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+} from 'react';
 import {
   getLocationKey,
   resolveTabTitle,
@@ -45,7 +52,7 @@ const useStyles = createStyles(({ token, css }) => ({
     }
   `,
   tab: css`
-    flex: 1 1 0;
+    flex: 0 0 auto;
     min-width: 72px;
     max-width: 220px;
     display: flex;
@@ -93,7 +100,8 @@ const useStyles = createStyles(({ token, css }) => ({
     height: 16px;
     border-radius: ${token.borderRadiusSM}px;
     color: ${token.colorTextTertiary};
-    font-size: 10px;
+    font-size: 12px;
+    line-height: 1;
 
     &:hover {
       background: ${token.colorFillSecondary};
@@ -101,6 +109,50 @@ const useStyles = createStyles(({ token, css }) => ({
     }
   `,
 }));
+
+type TabItemProps = {
+  tab: PageTab;
+  isActive: boolean;
+  tabClassName: string;
+  tabActiveClassName: string;
+  tabTitleClassName: string;
+  tabCloseClassName: string;
+  onSelect: (key: string) => void;
+  onClose: (key: string, event: React.MouseEvent) => void;
+};
+
+const TabItem = memo(function TabItem({
+  tab,
+  isActive,
+  tabClassName,
+  tabActiveClassName,
+  tabTitleClassName,
+  tabCloseClassName,
+  onSelect,
+  onClose,
+}: TabItemProps) {
+  return (
+    <div
+      role="tab"
+      aria-selected={isActive}
+      data-tab-key={tab.key}
+      className={isActive ? tabActiveClassName : tabClassName}
+      onClick={() => onSelect(tab.key)}
+    >
+      <span className={tabTitleClassName} title={tab.title}>
+        {tab.title}
+      </span>
+      <span
+        className={tabCloseClassName}
+        role="button"
+        aria-label="关闭"
+        onClick={(event) => onClose(tab.key, event)}
+      >
+        ×
+      </span>
+    </div>
+  );
+});
 
 function buildTab(
   pathname: string,
@@ -120,6 +172,10 @@ function buildTab(
 const PageTabs: React.FC<React.PropsWithChildren> = ({ children }) => {
   const { styles, cx } = useStyles();
   const location = useLocation();
+  const [, startTransition] = useTransition();
+  const tabBarRef = useRef<HTMLDivElement>(null);
+  const tabsRef = useRef<PageTab[]>([]);
+  const activeKeyRef = useRef('');
 
   const [tabs, setTabs] = useState<PageTab[]>(() => {
     const { pathname, search, hash } = location;
@@ -128,6 +184,15 @@ const PageTabs: React.FC<React.PropsWithChildren> = ({ children }) => {
     }
     return [buildTab(pathname, search, hash, resolveTabTitle(pathname))];
   });
+
+  tabsRef.current = tabs;
+
+  const activeKey = getLocationKey(
+    location.pathname,
+    location.search,
+    location.hash,
+  );
+  activeKeyRef.current = activeKey;
 
   useEffect(() => {
     const { pathname, search, hash } = location;
@@ -152,11 +217,15 @@ const PageTabs: React.FC<React.PropsWithChildren> = ({ children }) => {
     });
   }, [location]);
 
-  const activeKey = getLocationKey(
-    location.pathname,
-    location.search,
-    location.hash,
-  );
+  useEffect(() => {
+    const tabBar = tabBarRef.current;
+    if (!tabBar) return;
+
+    const activeTab = tabBar.querySelector<HTMLElement>(
+      `[data-tab-key="${CSS.escape(activeKey)}"]`,
+    );
+    activeTab?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  }, [activeKey]);
 
   const displayTabs = useMemo(() => {
     if (tabs.length > 0) {
@@ -173,45 +242,56 @@ const PageTabs: React.FC<React.PropsWithChildren> = ({ children }) => {
         resolveTabTitle(location.pathname),
       ),
     ];
-  }, [tabs, location]);
+  }, [tabs, location.pathname, location.search, location.hash]);
 
   const showTabBar =
     shouldShowTab(location.pathname) && displayTabs.length > 0;
 
-  const handleTabClick = useCallback(
-    (tab: PageTab) => {
-      if (tab.key === activeKey) return;
+  const tabClassName = styles.tab;
+  const tabActiveClassName = cx(styles.tab, styles.tabActive);
+  const tabTitleClassName = styles.tabTitle;
+  const tabCloseClassName = styles.tabClose;
+
+  const handleTabSelect = useCallback((key: string) => {
+    if (key === activeKeyRef.current) return;
+    const tab = tabsRef.current.find((item) => item.key === key);
+    if (!tab) return;
+    startTransition(() => {
       history.push(`${tab.pathname}${tab.search}${tab.hash}`);
-    },
-    [activeKey],
-  );
+    });
+  }, []);
 
   const handleTabClose = useCallback(
-    (tab: PageTab, event: React.MouseEvent) => {
+    (key: string, event: React.MouseEvent) => {
       event.stopPropagation();
 
       setTabs((prev) => {
-        const next = prev.filter((item) => item.key !== tab.key);
+        const tab = prev.find((item) => item.key === key);
+        if (!tab) return prev;
+
+        const next = prev.filter((item) => item.key !== key);
 
         if (next.length === 0) {
           history.replace('/welcome');
           return next;
         }
 
-        if (tab.key !== activeKey) {
+        if (key !== activeKeyRef.current) {
           return next;
         }
 
-        const closedIndex = prev.findIndex((item) => item.key === tab.key);
+        const closedIndex = prev.findIndex((item) => item.key === key);
         const nextActive =
           next[closedIndex] ?? next[closedIndex - 1] ?? next[0];
-        history.push(
-          `${nextActive.pathname}${nextActive.search}${nextActive.hash}`,
-        );
+        startTransition(() => {
+          history.push(
+            `${nextActive.pathname}${nextActive.search}${nextActive.hash}`,
+          );
+        });
         return next;
       });
     },
-    [activeKey],
+    [],
   );
 
   if (!showTabBar) {
@@ -220,31 +300,20 @@ const PageTabs: React.FC<React.PropsWithChildren> = ({ children }) => {
 
   return (
     <>
-      <div className={styles.tabBar} role="tablist">
-        {displayTabs.map((tab) => {
-          const isActive = tab.key === activeKey;
-          return (
-            <div
-              key={tab.key}
-              role="tab"
-              aria-selected={isActive}
-              className={cx(styles.tab, isActive && styles.tabActive)}
-              onClick={() => handleTabClick(tab)}
-            >
-              <span className={styles.tabTitle} title={tab.title}>
-                {tab.title}
-              </span>
-              <span
-                className={styles.tabClose}
-                role="button"
-                aria-label="关闭"
-                onClick={(event) => handleTabClose(tab, event)}
-              >
-                <CloseOutlined />
-              </span>
-            </div>
-          );
-        })}
+      <div ref={tabBarRef} className={styles.tabBar} role="tablist">
+        {displayTabs.map((tab) => (
+          <TabItem
+            key={tab.key}
+            tab={tab}
+            isActive={tab.key === activeKey}
+            tabClassName={tabClassName}
+            tabActiveClassName={tabActiveClassName}
+            tabTitleClassName={tabTitleClassName}
+            tabCloseClassName={tabCloseClassName}
+            onSelect={handleTabSelect}
+            onClose={handleTabClose}
+          />
+        ))}
       </div>
       <div className={styles.wrapper}>{children}</div>
     </>

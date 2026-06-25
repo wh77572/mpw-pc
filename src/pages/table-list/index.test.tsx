@@ -8,11 +8,19 @@ vi.mock('@ant-design/pro-components', () => ({
   PageContainer: ({ children }: any) => (
     <div data-testid="page-container">{children}</div>
   ),
-  ProTable: ({ columns, toolBarRender, request }: any) => {
-    // Invoke request prop to simulate ProTable data loading
+  FooterToolbar: ({ children }: any) => (
+    <div data-testid="footer-toolbar">{children}</div>
+  ),
+  ProDescriptions: ({ title }: any) => (
+    <div data-testid="pro-descriptions">{title}</div>
+  ),
+}));
+
+vi.mock('@/components', () => ({
+  TableMeta: ({ columns, toolBarRender, request }: any) => {
     request?.({ current: 1, pageSize: 20 }, {}, {});
     return (
-      <div data-testid="pro-table">
+      <div data-testid="table-meta">
         <div data-testid="table-columns">
           {columns?.map((col: any) => (
             <div
@@ -29,16 +37,14 @@ vi.mock('@ant-design/pro-components', () => ({
             </div>
           ))}
         </div>
-        {toolBarRender && <div data-testid="toolbar">{toolBarRender()}</div>}
+        {toolBarRender && (
+          <div data-testid="toolbar">
+            {toolBarRender({}, { selectedRowKeys: [], selectedRows: [] })}
+          </div>
+        )}
       </div>
     );
   },
-  FooterToolbar: ({ children }: any) => (
-    <div data-testid="footer-toolbar">{children}</div>
-  ),
-  ProDescriptions: ({ title }: any) => (
-    <div data-testid="pro-descriptions">{title}</div>
-  ),
 }));
 
 // Mock dependencies
@@ -51,6 +57,7 @@ vi.mock('antd', async () => {
         {
           success: vi.fn(),
           error: vi.fn(),
+          warning: vi.fn(),
         },
         null,
       ],
@@ -106,7 +113,6 @@ describe('TableList', () => {
     });
     vi.clearAllMocks();
 
-    // Mock rule API to return empty data
     vi.mocked(api.rule).mockResolvedValue({
       data: [],
       total: 0,
@@ -124,14 +130,14 @@ describe('TableList', () => {
     expect(container).toBeTruthy();
   });
 
-  it('should render ProTable component', () => {
+  it('should render TableMeta component', () => {
     render(
       <QueryClientProvider client={queryClient}>
         <TableList />
       </QueryClientProvider>,
     );
 
-    expect(screen.getByTestId('pro-table')).toBeInTheDocument();
+    expect(screen.getByTestId('table-meta')).toBeInTheDocument();
   });
 
   it('should have correct table columns', () => {
@@ -156,7 +162,7 @@ describe('TableList', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByTestId('pro-table')).toBeInTheDocument();
+      expect(screen.getByTestId('table-meta')).toBeInTheDocument();
     });
   });
 

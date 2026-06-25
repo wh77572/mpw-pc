@@ -42,31 +42,32 @@ export function flattenRoutes(
   return acc;
 }
 
-export function matchRoute(
-  pathname: string,
-  routeList: FlatRoute[],
-): FlatRoute | undefined {
-  const exact = routeList.find((route) => route.path === pathname);
-  if (exact) return exact;
-
-  const sorted = [...routeList].sort(
-    (a, b) => b.path.length - a.path.length,
-  );
-  return sorted.find(
-    (route) =>
-      route.path !== '/' &&
-      (pathname === route.path || pathname.startsWith(`${route.path}/`)),
-  );
-}
-
 export function getLocationKey(pathname: string, search: string, hash: string) {
   return `${pathname}${search}${hash}`;
 }
 
 export const flatRoutes = flattenRoutes(routes as RouteConfig[]);
 
+/** 按路径长度降序，前缀匹配时优先最长路径，模块级只排序一次 */
+const sortedFlatRoutes = [...flatRoutes].sort(
+  (a, b) => b.path.length - a.path.length,
+);
+
+export function matchRoute(pathname: string): FlatRoute | undefined {
+  const exact = flatRoutes.find((route) => route.path === pathname);
+  if (exact) return exact;
+
+  return sortedFlatRoutes.find(
+    (route) =>
+      route.path !== '/' &&
+      (pathname === route.path || pathname.startsWith(`${route.path}/`)),
+  );
+}
+
+const tabTitleCache = new Map<string, string>();
+
 export function getRouteTitle(pathname: string): string | undefined {
-  return matchRoute(pathname, flatRoutes)?.name;
+  return matchRoute(pathname)?.name;
 }
 
 function pathnameToMenuKey(pathname: string) {
@@ -80,25 +81,31 @@ function getMenuLabel(key: string) {
 
 /** Tab 标题固定使用中文，与侧边/顶部菜单保持一致 */
 export function resolveTabTitle(pathname: string): string {
-  const route = matchRoute(pathname, flatRoutes);
+  const cached = tabTitleCache.get(pathname);
+  if (cached !== undefined) {
+    return cached;
+  }
+
+  const route = matchRoute(pathname);
   const routeName = route?.name ?? getRouteTitle(pathname);
 
+  let title: string;
+
   if (routeName && CJK_REGEX.test(routeName)) {
-    return routeName;
-  }
-
-  const pathKey = pathnameToMenuKey(pathname);
-  const pathLabel = getMenuLabel(pathKey);
-  if (pathLabel) {
-    return pathLabel;
-  }
-
-  if (routeName) {
-    const nameLabel = getMenuLabel(`menu.${routeName}`);
-    if (nameLabel) {
-      return nameLabel;
+    title = routeName;
+  } else {
+    const pathKey = pathnameToMenuKey(pathname);
+    const pathLabel = getMenuLabel(pathKey);
+    if (pathLabel) {
+      title = pathLabel;
+    } else if (routeName) {
+      const nameLabel = getMenuLabel(`menu.${routeName}`);
+      title = nameLabel ?? routeName;
+    } else {
+      title = pathname;
     }
   }
 
-  return routeName || pathname;
+  tabTitleCache.set(pathname, title);
+  return title;
 }

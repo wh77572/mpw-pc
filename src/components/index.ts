@@ -14,6 +14,13 @@ import { AvatarDropdown } from './RightContent/AvatarDropdown';
  */
 export { default as AppWatermark } from './AppWatermark';
 export { default as PageTabs } from './PageTabs';
+export { default as TableMeta } from './TableMeta';
+export type {
+  ActionType as TableMetaActionType,
+  ProColumns as TableMetaColumns,
+  RequestData as TableMetaRequestData,
+  TableMetaProps,
+} from './TableMeta/types';
 export { default as ArticleListContent } from './ArticleListContent';
 export { default as AvatarList } from './AvatarList';
 export { default as ErrorBoundary } from './ErrorBoundary';

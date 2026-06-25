@@ -153,6 +153,24 @@ export const layout: RunTimeLayoutConfig = ({
       return (
         <AppWatermark>
           <PageTabs>{children}</PageTabs>
+          {/*<SettingDrawer*/}
+          {/*  disableUrlParams*/}
+          {/*  enableDarkTheme*/}
+          {/*  collapse={initialState?.settingDrawerOpen}*/}
+          {/*  onCollapseChange={(open) => {*/}
+          {/*    setInitialState((s) => ({*/}
+          {/*      ...s,*/}
+          {/*      settingDrawerOpen: open,*/}
+          {/*    }));*/}
+          {/*  }}*/}
+          {/*  settings={initialState?.settings}*/}
+          {/*  onSettingChange={(settings) => {*/}
+          {/*    setInitialState((s) => ({*/}
+          {/*      ...s,*/}
+          {/*      settings,*/}
+          {/*    }));*/}
+          {/*  }}*/}
+          {/*/>*/}
         </AppWatermark>
       );
     },

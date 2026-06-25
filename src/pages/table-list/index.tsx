@@ -7,12 +7,12 @@ import {
   FooterToolbar,
   PageContainer,
   ProDescriptions,
-  ProTable,
 } from '@ant-design/pro-components';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { FormattedMessage, useIntl } from '@umijs/max';
 import { Button, Drawer, type FormInstance, Input, message } from 'antd';
 import React, { useCallback, useRef, useState } from 'react';
+import { TableMeta } from '@/components';
 import { removeRule, rule } from '@/services/ant-design-pro/api';
 import CreateForm from './components/CreateForm';
 import UpdateForm from './components/UpdateForm';
@@ -242,21 +242,23 @@ const TableList: React.FC = () => {
   );
 
   return (
-    <PageContainer>
+    <>
       {contextHolder}
-      <ProTable<API.RuleListItem, API.PageParams>
-        headerTitle={intl.formatMessage({
-          id: 'pages.searchTable.title',
-          defaultMessage: 'Enquiry form',
-        })}
+      <TableMeta<API.RuleListItem, API.PageParams>
+        headerTitle={[
+          <CreateForm key="create" reload={actionRef.current?.reload} />,
+        ]}
         actionRef={actionRef}
         rowKey="key"
         search={{
-          labelWidth: 120,
+          labelWidth: 100,
         }}
-        toolBarRender={() => [
-          <CreateForm key="create" reload={actionRef.current?.reload} />,
-        ]}
+        options={{
+          fullScreen: true,
+          setting: true,
+          reload: false,
+          density: false,
+        }}
         request={rule}
         columns={columns}
         rowSelection={{
@@ -341,7 +343,7 @@ const TableList: React.FC = () => {
           />
         )}
       </Drawer>
-    </PageContainer>
+    </>
   );
 };
 

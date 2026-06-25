@@ -50,19 +50,19 @@ export default [
     component: './dashboard/analysis',
   },
   {
-    path: '/admin',
+    path: '/marketing',
     name: '营销管理',
     icon: 'crown',
-    access: 'canAdmin',
+    // access: 'canAdmin',
     routes: [
       {
-        path: '/admin',
-        redirect: '/admin/sub-page',
+        path: '/marketing',
+        redirect: '/marketing/pub-area',
       },
       {
-        path: '/admin/sub-page',
+        path: '/marketing/pub-area',
         name: '公海',
-        component: './Admin',
+        component: './table-list',
       },
     ],
   },
@@ -124,64 +124,64 @@ export default [
   //     },
   //   ],
   // },
-  // {
-  //   path: '/list',
-  //   icon: 'table',
-  //   name: 'list',
-  //   routes: [
-  //     {
-  //       path: '/list/search',
-  //       name: 'search-list',
-  //       component: './list/search',
-  //       routes: [
-  //         {
-  //           path: '/list/search',
-  //           redirect: '/list/search/articles',
-  //         },
-  //         {
-  //           name: 'articles',
-  //           icon: 'read',
-  //           path: '/list/search/articles',
-  //           component: './list/search/articles',
-  //         },
-  //         {
-  //           name: 'projects',
-  //           icon: 'project',
-  //           path: '/list/search/projects',
-  //           component: './list/search/projects',
-  //         },
-  //         {
-  //           name: 'applications',
-  //           icon: 'appstore',
-  //           path: '/list/search/applications',
-  //           component: './list/search/applications',
-  //         },
-  //       ],
-  //     },
-  //     {
-  //       path: '/list',
-  //       redirect: '/list/table-list',
-  //     },
-  //     {
-  //       name: 'table-list',
-  //       icon: 'table',
-  //       path: '/list/table-list',
-  //       component: './table-list',
-  //     },
-  //     {
-  //       name: 'basic-list',
-  //       icon: 'unorderedList',
-  //       path: '/list/basic-list',
-  //       component: './list/basic-list',
-  //     },
-  //     {
-  //       name: 'card-list',
-  //       icon: 'creditCard',
-  //       path: '/list/card-list',
-  //       component: './list/card-list',
-  //     },
-  //   ],
-  // },
+  {
+    path: '/list',
+    icon: 'table',
+    name: 'list',
+    routes: [
+      {
+        path: '/list/search',
+        name: 'search-list',
+        component: './list/search',
+        routes: [
+          {
+            path: '/list/search',
+            redirect: '/list/search/articles',
+          },
+          {
+            name: 'articles',
+            icon: 'read',
+            path: '/list/search/articles',
+            component: './list/search/articles',
+          },
+          {
+            name: 'projects',
+            icon: 'project',
+            path: '/list/search/projects',
+            component: './list/search/projects',
+          },
+          {
+            name: 'applications',
+            icon: 'appstore',
+            path: '/list/search/applications',
+            component: './list/search/applications',
+          },
+        ],
+      },
+      {
+        path: '/list',
+        redirect: '/list/table-list',
+      },
+      {
+        name: 'table-list',
+        icon: 'table',
+        path: '/list/table-list',
+        component: './table-list',
+      },
+      {
+        name: 'basic-list',
+        icon: 'unorderedList',
+        path: '/list/basic-list',
+        component: './list/basic-list',
+      },
+      {
+        name: 'card-list',
+        icon: 'creditCard',
+        path: '/list/card-list',
+        component: './list/card-list',
+      },
+    ],
+  },
   // {
   //   path: '/profile',
   //   name: 'profile',
